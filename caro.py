@@ -1,9 +1,9 @@
 # thu vien game
 import pygame, sys, threading
-
+import pygame_gui
 from button import Button
+#from pyvidplayer import Video
 
-from pyvidplayer import Video
 
 
 
@@ -16,9 +16,16 @@ pygame.display.set_icon(icon)
 
 # cua so game
 screen = pygame.display.set_mode((1280,720))
+WIDTH, HEIGHT = 1280, 720
 #bg
 bg=pygame.image.load(r'assets/mainmenu.png')
 bg=pygame.transform.scale(bg,(1280,720))
+banco=pygame.image.load(r'assets/tempboard.png')
+#banco=pygame.transform.scale(banco,(1280,720))
+cox=pygame.image.load(r'assets/x.png')
+coo=pygame.image.load(r'assets/o.png')
+nenbanco=pygame.image.load(r'assets/background.png')
+nenbanco=pygame.transform.scale(nenbanco,(1280,720))
 gamebg=pygame.image.load(r'assets/gamebg.jpg')
 gamebg=pygame.transform.scale(gamebg,(1280,720))
 pt=pygame.image.load(r'assets/1151373.png')
@@ -27,9 +34,18 @@ pt=pygame.transform.scale(pt,(1280,720))
 # fps
 clock = pygame.time.Clock()
 #music 
-nhac = pygame.mixer.Sound(r'music/game.wav')
+nhac = pygame.mixer.Sound('music/dtnd.wav')
 time_skip= 603
 
+#text input
+
+manager1 = pygame_gui.UIManager((1280, 720))
+manager2 = pygame_gui.UIManager((1280, 720))
+name_1 = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((500, 400), (300, 50)), manager=manager1,
+                                               object_id='#main_text_entry')
+
+name_2 = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((500, 400), (300, 50)), manager=manager2,
+                                               object_id='#main_text_entry')
 
 
 
@@ -50,6 +66,7 @@ WORK = 10000000
 ok_play = True
 ok_about = True
 ok_setting =True
+wide = 54
 
 def intro():
     global time_skip
@@ -81,7 +98,7 @@ def intro():
             main() 
         
         pygame.display.update()
-        clock.tick(60)
+        clock.tick(120)
 
 def doWork():
 	# Do some math WORK amount times
@@ -97,7 +114,17 @@ finished = FONT.render("Done!", True, "white")
 finished_rect = finished.get_rect(center=(640, 360))
 
 ham =0
-
+board = [[0,0,0,0,0,0,0,0,0,0,0], 
+         [0,0,0,0,0,0,0,0,0,0,0],
+         [0,0,0,0,0,0,0,0,0,0,0],
+         [0,0,0,0,0,0,0,0,0,0,0],
+         [0,0,0,0,0,0,0,0,0,0,0],
+         [0,0,0,0,0,0,0,0,0,0,0],
+         [0,0,0,0,0,0,0,0,0,0,0],
+         [0,0,0,0,0,0,0,0,0,0,0],
+         [0,0,0,0,0,0,0,0,0,0,0],
+         [0,0,0,0,0,0,0,0,0,0,0],
+         [0,0,0,0,0,0,0,0,0,0,0]]
 
 def get_font(size): # Returns Press-Start-2P in the desired size
     return pygame.font.Font("assets/NeonTubes2.otf", size)
@@ -131,9 +158,32 @@ def ld():
                 elif ham==3:
                     setting()     
         pygame.display.update()
-        clock.tick(60)
+        clock.tick(120)
 
-        
+
+
+def AI():
+    while True:
+        screen.blit(bg, (0, 0))
+        PLAY_MOUSE_POS = pygame.mouse.get_pos()
+
+        PLAY_BACK = Button(image=None, pos=(110, 40), 
+                                    text_input="BACK", font=get_font(30), base_color="blue", hovering_color="Green")
+        comingsoon = Button(image=None, pos=(640, 400), 
+                                    text_input="COMING SOON", font=get_font(100), base_color="red", hovering_color="Green")
+                                     
+        for button in [comingsoon,  PLAY_BACK]:
+                button.changeColor(PLAY_MOUSE_POS)
+                button.update(screen)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if PLAY_BACK.checkForInput(PLAY_MOUSE_POS):                        
+                        play()
+        pygame.display.update()
 
         
         
@@ -149,16 +199,16 @@ def play():
         else:
             screen.blit(bg, (0, 0))
 
-            CHOSE_MOUSE_POS = pygame.mouse.get_pos()
-            NORMAL_BUTTON = Button(image=pygame.image.load("assets/Play Rect.png"), pos=(640, 350), 
+            PLAY_MOUSE_POS = pygame.mouse.get_pos()
+            AI_BUTTON = Button(image=pygame.image.load("assets/Play Rect.png"), pos=(640, 350), 
                                 text_input="VS AI", font=get_font(30), base_color="#d7fcd4", hovering_color="red")
-            SUPPER_BUTTON = Button(image=pygame.image.load("assets/Play Rect.png"), pos=(640, 420), 
+            PVP_BUTTON = Button(image=pygame.image.load("assets/Play Rect.png"), pos=(640, 420), 
                                 text_input="PVP", font=get_font(30), base_color="#d7fcd4", hovering_color="red")
             PLAY_BACK = Button(image=None, pos=(110, 40), 
                                     text_input="BACK", font=get_font(30), base_color="blue", hovering_color="Green")
 
-            for button in [NORMAL_BUTTON, SUPPER_BUTTON ,PLAY_BACK]:
-                button.changeColor(CHOSE_MOUSE_POS)
+            for button in [AI_BUTTON, PVP_BUTTON ,PLAY_BACK]:
+                button.changeColor(PLAY_MOUSE_POS)
                 button.update(screen)
             
             for event in pygame.event.get():
@@ -166,10 +216,14 @@ def play():
                     pygame.quit()
                     sys.exit()
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    if PLAY_BACK.checkForInput(CHOSE_MOUSE_POS):
+                    if PLAY_BACK.checkForInput(PLAY_MOUSE_POS):
                         ok_play =True
                         loading_finished = False
                         main()
+                    if PVP_BUTTON.checkForInput(PLAY_MOUSE_POS):
+                        get_user_name1()
+                    if AI_BUTTON.checkForInput(PLAY_MOUSE_POS):
+                        AI()
 
         pygame.display.update()
 
@@ -236,13 +290,176 @@ def setting():
         
         pygame.display.update()
 
-
+def checkxy(x,y,z):
+    l=370 #goc.x
+    r=100 #goc.y
     
+    for i in range(10):
+        for j in range(10):
+            if x > (i*wide + l) and x < ( ( i +1) * wide + l)  and  y > (j*wide + r)  and y <(j*wide + wide + r) and board[i+1][j+1]==0:
+                board[i+1][j+1]=z+1
+                return True
+    return False
 
+def inxo():
+    for i in range(10):
+        for j in range(10):
+            if board[i+1][j+1] == 1:
+                screen.blit(cox,(370+i*wide+5, 5+100+j*wide))
+            if board[i+1][j+1] == 2:
+                screen.blit(coo,(370+i*wide+5, 5+ 100+j*wide))
+            
+                
+
+
+
+turn =0
+
+def show_user_name(user_name1, user_name2 ):
+    global turn
+    while True:
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                current_pos = pygame.mouse.get_pos()
+                x=current_pos[0]
+                y=current_pos[1]
+                if x > 370 and x < (370+540)   and y > 100 and y <640 :
+                    
+                    if checkxy(x,y, turn%2) == True:
+                        
+                        turn +=1
+                    
+            
+                
+                
+            pygame.display.update()
+            
+        screen.blit(nenbanco, (0, 0)) 
+        screen.blit(banco, (370, 100))  
+        inxo()   
+         
+                
+        if turn%2==1:
+            uu= "assets/Play Rect.png"
+            vv="assets/Play Rect - Copy.png"
+            turnx="O TURN"
+
+            u ="#d7fcd4"
+            v="green"
+        else:
+            vv= "assets/Play Rect.png"
+            uu="assets/Play Rect - Copy.png"
+            v ="#d7fcd4"
+            u="green"
+            turnx="X TURN"
+        X_BUTTON = Button(image=pygame.image.load(uu), pos=(100,100), 
+                            text_input=user_name1, font=get_font(30), base_color=u, hovering_color=v)
+        O_BUTTON = Button(image=pygame.image.load(vv), pos=(1060, 100), 
+                            text_input=user_name2, font=get_font(30), base_color=v, hovering_color=v)
+        turn_BUTTON = Button(image=pygame.image.load("assets/Play Rect - Copy.png"), pos=(640,80), 
+                            text_input=turnx, font=get_font(30), base_color=u, hovering_color=v)
+        for button in [X_BUTTON, O_BUTTON, turn_BUTTON]:
+            #button.changeColor(MENU_MOUSE_POS)
+            button.update(screen)
+
+        #new_text = pygame.font.SysFont("dasd", 50).render(f"Hello, {user_name1} , {user_name2}", True, "black")
+        #new_text_rect = new_text.get_rect(center=(WIDTH/2, HEIGHT/2))
+        #screen.blit(new_text, new_text_rect)
+
+        clock.tick(60)
+
+        pygame.display.update()
+
+
+def get_user_name1():
+    global namethangdautien
+
+    ok=0
+    while True:
+        screen.blit(bg, (0, 0))
+        PLAY_MOUSE_POS = pygame.mouse.get_pos()
+        PLAY_BACK = Button(image=None, pos=(110, 40), 
+                                    text_input="BACK", font=get_font(30), base_color="blue", hovering_color="Green")                              
+        for button in [ PLAY_BACK]:
+                button.changeColor(PLAY_MOUSE_POS)
+                button.update(screen)
+
+        
+
+        
+        UI_REFRESH_RATE = clock.tick(60)/1000
+        name1_BUTTON = Button(image=pygame.image.load("assets/Play Rect.png"), pos=(640, 350), 
+                            text_input="name thang dau tien", font=get_font(30), base_color="#d7fcd4", hovering_color="red")
+        
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if PLAY_BACK.checkForInput(PLAY_MOUSE_POS):                        
+                        play()
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if (event.type == pygame_gui.UI_TEXT_ENTRY_FINISHED and
+                event.ui_object_id == '#main_text_entry'):
+                get_user_name2(event.text)
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            
+                                               
+            manager1.process_events(event)        
+        manager1.update(UI_REFRESH_RATE)      
+        name1_BUTTON.update(screen)       
+        manager1.draw_ui(screen)
+        pygame.display.update()
+ 
+
+
+def get_user_name2(namethangdautien):
+    global namthangthuhai
+    while True:
+        screen.blit(bg, (0, 0))
+        PLAY_MOUSE_POS = pygame.mouse.get_pos()
+        PLAY_BACK = Button(image=None, pos=(110, 40), 
+                                    text_input="BACK", font=get_font(30), base_color="blue", hovering_color="Green")                              
+        for button in [ PLAY_BACK]:
+                button.changeColor(PLAY_MOUSE_POS)
+                button.update(screen)
+
+        UI_REFRESH_RATE = clock.tick(60)/1000
+        name2_BUTTON = Button(image=pygame.image.load("assets/Play Rect.png"), pos=(640, 350), 
+                            text_input="name thang thu hai", font=get_font(30), base_color="#d7fcd4", hovering_color="red")
+        
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if PLAY_BACK.checkForInput(PLAY_MOUSE_POS):                        
+                        get_user_name1()
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if (event.type == pygame_gui.UI_TEXT_ENTRY_FINISHED and
+                event.ui_object_id == '#main_text_entry'):
+                    namethangthuhai = event.text
+                    show_user_name(namethangdautien,event.text)     
+       
+            
+            manager2.process_events(event)
+        
+        
+        manager2.update(UI_REFRESH_RATE)
+        name2_BUTTON.update(screen)      
+        manager2.draw_ui(screen)
+        pygame.display.update()
+ 
+
+ 
+#nhac.play(loops = -1)
 #vong lap xu ly game
-def main():
-    #nhac.play(loops = -1) 
-    
+
+def main(): 
     run = True
     global ham
     while run:
@@ -283,7 +500,5 @@ def main():
         pygame.display.update()
         clock.tick(120)
     pygame.quit()
-    exit()
-
-
-intro()
+   
+main()
